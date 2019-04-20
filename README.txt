@@ -1,5 +1,3 @@
-README
-
 This is a repository of a version of the ray trace simulation of a compact fourier transform spectrometer written by Mira Liu over the years 2016-2019 with Dr. Stephan S. Meyer, Dr. Ritoban Basu Thakur, and Zhaodi Pan. 
 
 
