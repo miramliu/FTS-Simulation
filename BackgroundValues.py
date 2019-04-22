@@ -1,3 +1,4 @@
+'''Background values that are called upon when defining the geometric nature of the simulated FTS. Descriptions are included as comments. Mira Liu 04/21/2019 '''
 from RayTraceFunctions import *
 
 ## the four polarizers in order.
