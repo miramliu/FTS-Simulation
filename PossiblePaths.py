@@ -1,3 +1,5 @@
+'''These are the explicit functions of the specific paths of rays (transmission and reflection through four polarizers and off of all the mirrors/ellipsoids) through the simulation of the fourier transform spectrometer. Mira Liu 04/21/19  '''
+
 from RayTraceFunctions import *
 from BackgroundValues import *
 
