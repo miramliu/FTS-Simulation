@@ -1566,6 +1566,20 @@ def RunNRays_NoPix(Lamd,Nsize,spo,n): #multiple individual rays.
         Ij = Ij + np.array(Pow1)
     return Delay,Ij,Numz
         
+    
+''' Number of rays that reach detector as a function of mirror location. '''
+def Part2(Lamd,Nsize,spo): 
+    n = 1000
+    r = 0
+    thetG = [0,0,0]
+    Rays = makerays(spo,thetG,r,n) 
+    N=[]
+    Number = [] #number of rays that hit detector as function of mirror position (y)
+    for y in np.linspace(-18,18,int(Nsize)):
+        PTot=0
+        OutRays=RunRaysM(Rays,y) #eight each if n =1
+        N.append(len(OutRays))
+    return N
 
 '''
 def makeraysTILT(sourcepointorigin,r,n,):
