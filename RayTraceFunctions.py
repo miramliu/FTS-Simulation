@@ -1,4 +1,4 @@
-'''This includes the functions of several different simulations of the Meyer Lab's Compact Fourier Transform Spectrometer. It ONLY includes the functions that are necessary FOR THE FINAL SIMULATIONS, rather than ones that were used when building this. It also includes different version of functions regarding input rays (random initial phase or all zero) and pickling (the ability to return every single ray generated in the simulation). If more functions showing the build up of this simulation, contact me at liusarkarm@uchicago.edu Mira Liu'''
+'''This includes the functions of several different simulations of the Meyer Lab's Compact Fourier Transform Spectrometer. It ONLY includes the functions that are necessary FOR THE FINAL SIMULATIONS, rather than ones that were used when building this. It also includes different version of functions regarding input rays (random initial phase or all zero) and pickling (the ability to return every single ray generated in the simulation). If more functions showing the build up of this simulation, contact me at liusarkarm@uchicago.edu. Mira Liu 04/21/2019'''
 import numpy as np
 import numpy
 from random import uniform
