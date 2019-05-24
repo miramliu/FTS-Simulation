@@ -1,4 +1,4 @@
-'''This includes the functions of several different simulations of the Meyer Lab's Compact Fourier Transform Spectrometer. It ONLY includes the functions that are necessary FOR THE FINAL SIMULATIONS, rather than ones that were used when building this. It also includes different version of functions regarding input rays (random initial phase or all zero) and pickling (the ability to return every single ray generated in the simulation). If more functions showing the build up of this simulation are wanted, contact me at liusarkarm@uchicago.edu Mira Liu. 04/22/2019'''
+'''This includes the functions of several different simulations of the Meyer Lab's Compact Fourier Transform Spectrometer. It ONLY includes the functions that are necessary FOR THE FINAL SIMULATIONS, rather than ones that were used when building this. It also includes different version of functions regarding input rays (random initial phase or all zero) and pickling (the ability to return every single ray generated in the simulation). If more functions showing the build up of this simulation, contact me at liusarkarm@uchicago.edu Mira Liu'''
 import numpy as np
 import numpy
 from random import uniform
@@ -6,7 +6,7 @@ import random
 import math
 
 
-'''Background values. Also included in a separate .py file.'
+'''Background values. Also included in a separate .py file.'''
 ## the four polarizers in order.
 p1 = np.pi/4
 p2 = np.pi/2
@@ -61,7 +61,6 @@ center10,range10= [-96.458686868686868, 3.279771448324329, 73.24759051407338], [
 center7,range7= [96.45868686868684, 3.1907688264097978, -73.870253223692842], [41.577020202020208, 200, 19.642335814884394]
 Ecenter7 = [192.45-32.075,0,0]
 Ecenter10 = [-128.3-32.075,0,0]
-'''
 
 ''' Below are functions used in the simulation'''
 
@@ -1278,8 +1277,8 @@ def jRegions(n):
     return DetTot
 
 #these are the functions above but editted to include position of mirror
-from BackgroundValues import *
-from PossiblePaths import *
+#from BackgroundValues import *
+#from PossiblePaths import *
 
 '''Output From Detector w/ Mirror. GIVE initial RAYS AND Y position, returns output rays from detector if mirror at Y'''
 def OFDM(Rays,y): 
@@ -1317,11 +1316,11 @@ def RunRaysMi(Rays,y): #just give number of rays to be run through this FTS at a
     return Gtestsorted,Regions'''
 
 ''' give rays to be run through this FTS at a specific y, returns the good rays and the region. not used anymore'''
-def RunRaysM(Rays,y): #just give number of rays to be run through this FTS at a specific y!
+def RunRaysM(Rays,y): #just give rays to be run through this FTS at a specific y!
     Rayf = OFDM(Rays,y)
     G= checkoutraysM(Rayf,[160.375,-113],7.9375) # GOOD RAYS ONLY 
-    Gtestsorted = sortgrid(G)
-    return Gtestsorted
+    #Gtestsorted = sortgrid(G)
+    return G
 
 '''makes n rays with radius r around the fixed source point origin that is the focus of the first ellipsoid. '''
 def makeraysiFIXED(n,r):
@@ -1708,7 +1707,7 @@ def TTTTioM(Ri,p1,p2,p3,p4,originM):
     Ray_TP3 = IntPolT2(Ray_E4,coeffpolar,originpolar3,p3) #P3
     Ray_E5 = ReflEll(Ray_TP3, thet5,origin5,coeffellipse56,center5,range5)#OFF E5
     Ray_TP4 = IntPolT2(Ray_E5,coeffpolar,originpolar4,p4)
-    Ray_E72 = ReflEll(Ray_TP4,thet7,origin7,coeffellipse7,center7,range7)
+    Ray_E72 = ReflEll(Ray_TP4,thet7,origin7,coeffellipse7,center7,range7) #OFF E7
     return Ray_E72
 
 def RRRRioM(Ri,p1,p2,p3,p4,originM):
