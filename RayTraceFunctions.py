@@ -1006,11 +1006,58 @@ def ORS(): #one restricted spec
     if checkangle(v)== False:
         return ORS()
     
+    
+'''given a vector, checks the angle to make < lim degrees'''
+def checkangle_narrow(v,lim):
+    #lim = np.pi/6 #30 degrees
+    #lim= np.pi/9 #20 degrees
+    #lim = np.pi/18 #10 degrees
+    x,y,z = v[0],v[1],v[2]
+    theta = np.pi/2 -np.arctan(z/np.sqrt((x**2)+(y**2)))
+    if np.abs(theta) <= lim:
+        return True
+    else:
+        return False
+    
+'''Gives one restricted specular angle (restricted in that it will hit AND is within 30 degrees of the z axis) '''
+def ORS_narrow(lim): #one restricted spec
+    x,y,z = [],[],[]
+    theta=np.arccos(uniform(-1,1))
+    phi=np.random.uniform(0,2*np.pi)
+    xt=np.sin(theta)*np.cos(phi)
+    yt=np.sin(theta)*np.sin(phi)
+    zt=np.cos(theta)
+    if zt<0.:
+        zt=-zt
+    a=uniform(0,1)
+    while a>zt:
+        theta=np.arccos(uniform(-1,1))
+        phi=np.random.uniform(0,2*np.pi)
+        xt=np.sin(theta)*np.cos(phi)
+        yt=np.sin(theta)*np.sin(phi)
+        zt=np.cos(theta)
+        if zt<0.:
+            zt=-zt
+        a=uniform(0,1)
+    v = [xt, yt, zt]
+    while checkangle_narrow(v,lim) == True:
+        return v
+    if checkangle_narrow(v,lim)== False:
+        return ORS_narrow(lim)
+    
 '''returns a certain number (n) of random distribution of restricted specular rays '''    
 def specRestricted(n):
     V = []
     for i in np.arange(n):
         v = ORS()
+        V.append(v)  
+    return V
+
+'''returns a certain number (n) of random distribution of restricted specular rays < 30 degrees'''    
+def specRestricted_narrow(n,lim):
+    V = []
+    for i in np.arange(n):
+        v = ORS_narrow(lim)
         V.append(v)  
     return V
 
@@ -1075,6 +1122,34 @@ def FSRay(specnum,sourcepoint,sourcethet,origin):
             Rays.append(Ray)
     return Rays
 
+'''creates a SOURCE OF INITIAL RAYS, with rays defined by point and vector, arbitrary polarization, and distance travelled 0, < 30 degree launch angle''' 
+def FSRay_narrow(specnum,sourcepoint,sourcethet,origin,lim):
+    originG = [0,0,0]
+    Rays = []
+    if type(sourcepoint[0]) is int or type(sourcepoint[0]) is float or type(sourcepoint[0]) is numpy.float64:
+        for i in range(0,specnum):
+            v1 = specRestricted_narrow(1,lim)
+            vx,vy,vz = sep(v1)
+            v1x,v1y,v1z = transformLG(vx,vy,vz,originG,sourcethet)
+            v2 = sepop(v1x,v1y,v1z)
+            Ex,Ey,thet1 = InitialPolarization()
+            spT = [sourcepoint[0],sourcepoint[1],sourcepoint[2]]
+            Ray = [thet1,1.0,spT,v2[0],0]
+            Rays.append(Ray)
+        return Rays
+    else:
+        for i in range (0,specnum):
+            v1 = specRestricted_narrow(1,lim)
+            vx,vy,vz = sep(v1)
+            v1x,v1y,v1z = transformLG(vx,vy,vz,originG,sourcethet)
+            v2 = sepop(v1x,v1y,v1z)
+            j = random.randint(0,len(sourcepoint[0])-1)
+            spT = [sourcepoint[0][j],sourcepoint[1][j],sourcepoint[2][j]]
+            Ex,Ey,thet1 = InitialPolarization()
+            Ray = [thet1,1.0,spT,v2[0],0]
+            Rays.append(Ray)
+    return Rays
+
 '''SAME AS ABOVE BUT INITIAL INITIAL POLARIZATION VALUE ZERO'''
 def FSRay_Zero(specnum,sourcepoint,sourcethet,origin):
     originG = [0,0,0]
@@ -1094,6 +1169,36 @@ def FSRay_Zero(specnum,sourcepoint,sourcethet,origin):
     else:
         for i in range (0,specnum):
             v1 = specRestricted(1)
+            vx,vy,vz = sep(v1)
+            v1x,v1y,v1z = transformLG(vx,vy,vz,originG,sourcethet)
+            v2 = sepop(v1x,v1y,v1z)
+            j = random.randint(0,len(sourcepoint[0])-1)
+            spT = [sourcepoint[0][j],sourcepoint[1][j],sourcepoint[2][j]]
+            #Ex,Ey,thet1 = InitialPolarization()
+            thet1 = 0
+            Ray = [thet1,1.0,spT,v2[0],0]
+            Rays.append
+        return Rays
+    
+'''SAME AS ABOVE BUT INITIAL INITIAL POLARIZATION VALUE ZERO < 30 degree launch angle'''
+def FSRay_Zero_narrow(specnum,sourcepoint,sourcethet,origin,lim):
+    originG = [0,0,0]
+    Rays = []
+    if type(sourcepoint[0]) is int or type(sourcepoint[0]) is float or type(sourcepoint[0]) is numpy.float64:
+        for i in range(0,specnum):
+            v1 = specRestricted_narrow(1,lim)
+            vx,vy,vz = sep(v1)
+            v1x,v1y,v1z = transformLG(vx,vy,vz,originG,sourcethet)
+            v2 = sepop(v1x,v1y,v1z)
+            #Ex,Ey,thet1 = InitialPolarization()
+            thet1 = 0
+            spT = [sourcepoint[0],sourcepoint[1],sourcepoint[2]]
+            Ray = [thet1,1.0,spT,v2[0],0]
+            Rays.append(Ray)
+        return Rays
+    else:
+        for i in range (0,specnum):
+            v1 = specRestricted_narrow(1,lim)
             vx,vy,vz = sep(v1)
             v1x,v1y,v1z = transformLG(vx,vy,vz,originG,sourcethet)
             v2 = sepop(v1x,v1y,v1z)
@@ -1438,6 +1543,7 @@ def makeraysVERTICAL(sourcepointorigin,r,n):
         Rays[i][3]=v2
     return Rays
 
+
 '''Same as above with initial phase all set to zero, rather than random phase. '''
 def makeraysVERTICAL_Zero(sourcepointorigin,r,n):
     sourcethet = [0.,0.,0.] #SHOT STRAIGHT UP
@@ -1520,10 +1626,22 @@ def makerays(sourcepointorigin,sourcethet,r,n):
     Rays = FSRay(n,sourcepoints, sourcethet,origin10)
     return Rays
 
+'''Makes n rays. sourcepoints random in radius r around sourcepointorigin. random launch angles in hemisphere centered around sourcethet and < lim (solid angle in radians) launch angle. '''
+def makerays_narrow(sourcepointorigin,sourcethet,r,n,lim):
+    sourcepoints = specsource(r,sourcepointorigin,sourcethet,n) # SOURCE
+    Rays = FSRay_narrow(n,sourcepoints, sourcethet,origin10,lim)
+    return Rays
+
 '''Same as above but with initial phase of zero instead of random. '''
 def makerays_Zero(sourcepointorigin,sourcethet,r,n):
     sourcepoints = specsource(r,sourcepointorigin,sourcethet,n) # SOURCE
     Rays = FSRay_Zero(n,sourcepoints, sourcethet,origin10)
+    return Rays
+
+'''Same as above but with initial phase of zero instead of random and < lim (solid angle in radians) launch angle. '''
+def makerays_Zero_narrow(sourcepointorigin,sourcethet,r,n,lim):
+    sourcepoints = specsource(r,sourcepointorigin,sourcethet,n) # SOURCE
+    Rays = FSRay_Zero_narrow(n,sourcepoints, sourcethet,origin10,lim)
     return Rays
 
 '''Calculates number of samples needed for a given wavelength (in mm) '''
@@ -1592,7 +1710,7 @@ def RunOneRay_nopix(Lamd,Nsize,spo): #no pixels
         PTot = PTot + (Ext*Ext.conjugate()).real + (Eyt*Eyt.conjugate()).real
         Delay.append(y*0.95630475596*4)
         Ij.append(PTot)
-    return Delay,Ij
+    return Delay,Ij   
 
 '''Simulation of interference of probability function of a single photon. 500 rays with initial phase of zero from a single source point, random launch points, and power is summed before squared. To show Chamberlain loss (large etendue) '''
 def RunRays_Prob(Lamd,Nsize,spo):
@@ -1626,6 +1744,44 @@ def RunRays_Prob(Lamd,Nsize,spo):
                 #Gr = Airygaussian3dNORM(Pix[j][0],Pix[j][1],sig,mux,muy)
                 Gr = 1
                 Ex4i = Ex4i + Gr*Ex
+                Ey4i = Ey4i + Gr*Ey
+            PTot = PTot + (Ex4i*Ex4i.conjugate()).real + (Ey4i*Ey4i.conjugate()).real
+        Delay.append(y*0.95630475596*4)
+        Ij.append(PTot)
+    return Delay,Ij
+
+'''Simulation of interference of probability function of a single photon. 500 rays with initial phase of zero from a single source point, random launch points, and power is summed before squared. To show Chamberlain loss (large etendue) '''
+def RunRays_Prob_narrow(Lamd,Nsize,spo,lim):
+    n = 500
+    r = 0
+    thetG = [0,0,0]
+    #Rays = makeraysVERTICAL(spo,r,n) 
+    Rays = makerays_Zero_narrow(spo,thetG,r,n,lim) #lim is solid angle wanted in radians
+    #jx,jy = gridlines(7.9375,[160.375,-113],200) #these are now the PIXELS
+    #Pix = MakePixels(jx,jy) #center of each pixel
+    Ij = []
+    Delay = []
+    for y in np.linspace(-18,18,int(Nsize)):
+        PTot=0
+        OutRays=RunRaysM(Rays,y) #all rays that made it through the detector
+        #Overlap = gaussoverlap(OutRays[0],OutRays[5],3.3) #two paths that hit two different spots 
+        #for j in range(len(Pix)): #per PIXEL
+        for j in range(1): #no pixels
+            Ex4i = 0 #adding PER PIXEL from parts of RAYS in this PIXEL
+            Ey4i = 0 #THIS IS WHERE THEY WILL INTERFERE
+            for i in range(len(OutRays)): #per ray IN THIS PIXEL
+                I = OutRays[i][1] #amplitude
+                thet = OutRays[i][0] #polarization
+                phase = np.exp(1j*(OutRays[i][4]*2*np.pi/Lamd)) #e^ix2pi/lambda, x = distance traveleld
+                Ex1 = np.sqrt(I)*np.cos(thet) #polarization
+                Ey1 = np.sqrt(I)*np.sin(thet)
+                Ex = Ex1*phase #phase
+                Ey = Ey1*phase
+                #doing summation over entire detector
+                #sig,mux,muy = MakeGaussian(OutRays[i],Lamd)
+                #Gr = Airygaussian3dNORM(Pix[j][0],Pix[j][1],sig,mux,muy)
+                Gr = 1
+                Ex4i = Ex4i + Gr*Ex #add electric fields of all rays
                 Ey4i = Ey4i + Gr*Ey
             PTot = PTot + (Ex4i*Ex4i.conjugate()).real + (Ey4i*Ey4i.conjugate()).real
         Delay.append(y*0.95630475596*4)
@@ -1923,7 +2079,7 @@ def TRTRioMPickle(Ri,p1,p2,p3,p4,originM):
     return Ri, Ray1, Ray_TP1,Ray_E8,Ray_RP2,Ray_E1,Ray_M0,Ray_E2,Ray_TP3,Ray_E6,Ray_RP4,Ray_E72
 
 
-
+# Ignore Below
 '''Tilting: (includes ability to tilt mirror and polarizers)
 GIVE initial RAYS AND Y position, returns output rays from detector if mirror at Y. Includes tilt of polarizers and tilt of mirror.
 Not completed.
