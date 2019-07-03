@@ -4,6 +4,8 @@ Included in this repository are three base .py files necessary to run the simula
 
 CheckGeometric.ipynb is a jupyter notebook that statistically simulates the modulating envelope caused by loss of rays due to geometric scattering. PlotGeometric.ipynb is a jupyter notebook that plots the paths of rays (n=50) through simulation (specified by a function that sets which of the 8 paths the rays will be taking). More notes are included in the notebooks.
 
+20180318_2211_150GHz_new_polarizer_35.pkl is the reference experimental data set run with the 144GHz source. It can be ploted to compare with the results of the simulation with Power1 = (d['sig0F']), Power = [x/Power1.max() for x in Power1], Delay = (d['delay0F']). 
+
 Lastly there is a .pkl file that contains every step of the simulations of a 90Ghz light source with 500 rays, located at this link https://uchicago.box.com/s/vhxjh8tygffc7ips137com2ajwc9lrfs. ToPickle.txt included in this repository describes the format of the pickle file. 
 
 All code is written by Mira Liu.
