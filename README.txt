@@ -7,6 +7,8 @@ More notes are included in the notebooks.
 
 20180318_2211_150GHz_new_polarizer_35.pkl is the reference experimental data set run with the 144GHz source. It can be ploted to compare with the results of the simulation with Power1 = (d['sig0F']), Power = [x/Power1.max() for x in Power1], Delay = (d['delay0F']). 
 
+There are pickle files of recently run simulations saved in the folder 'Previous Runs'. There is a note in the folder describing the names of the runs. There are many more pickle files of simulations of different versions of code available if wanted. 
+
 Lastly there is a .pkl file that contains every step of the simulations of a 90Ghz light source with 500 rays, located at this link https://uchicago.box.com/s/vhxjh8tygffc7ips137com2ajwc9lrfs. ToPickle.txt included in this repository describes the format of the pickle file. 
 
 All code is written by Mira Liu.
