@@ -1,4 +1,4 @@
-'''This includes the functions of several different simulations of the Meyer Lab's Compact Fourier Transform Spectrometer. It ONLY includes the functions that are necessary FOR THE FINAL SIMULATIONS, rather than ones that were used when building this. It also includes different version of functions regarding input rays (random initial phase or all zero) and pickling (the ability to return every single ray generated in the simulation). If more functions showing the build up of this simulation, contact me at liusarkarm@uchicago.edu Mira Liu'''
+'''This includes the functions of several different simulations of the Meyer Lab's Compact Fourier Transform Spectrometer. It ONLY includes the functions that are necessary FOR THE FINAL SIMULATIONS, rather than ones that were used when building this. It also includes different version of functions regarding input rays (random initial phase or all zero) and pickling (the ability to return every single ray generated in the simulation). If you are interested in more functions showing the build up of this simulation, contact me at liusarkarm@uchicago.edu Mira Liu'''
 import numpy as np
 import numpy
 from random import uniform
@@ -1847,6 +1847,31 @@ def Part2(Lamd,Nsize,spo):
         OutRays=RunRaysM(Rays,y) #eight each if n =1
         N.append(len(OutRays))
     return N
+
+'''This returns all of the information of a simulation of n rays. The format it is saved in is described in ToPickle.txt '''
+def RunOneRay_ToPickle(Lamd,Nsize,spo,n): #no pixels
+    #n = 1
+    r = 0
+    Rays = makerays_Zero(spo,thetG,r,n) 
+    Ij = []
+    Delay = []
+    Rayf = [[[]for j in range(Nsize+1)] for i in range(n)]
+    for k in range(n):
+        Rayf[k][0].append('Ray: '+str(k))
+    yn=1
+    for y in np.linspace(-18,18,int(Nsize)): #nsize being number of positions of mirror
+        for i in range(len(Rays)):
+            Paths = [TTTTioMPickle,RRRRioMPickle,TTRRioMPickle,RTTRioMPickle,RTRTioMPickle,TRRTioMPickle,RRTTioMPickle,TRTRioMPickle]
+            Ri = Rays[i]
+            for j in range(8):
+                origin = (0,y,0)
+                if j ==0:
+                    Rayf[i][yn].append('Mirror position: '+str(origin))
+                out = Paths[j](Ri,p1,p2,p3,p4,origin)
+                out = ((Paths[j].__name__)[:-3],)+out
+                Rayf[i][yn].append(out)
+        yn=yn+1
+    return Rayf
 
 
 ''' Below are functions included in PossiblePaths.py'''
