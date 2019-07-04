@@ -1658,30 +1658,7 @@ def Maxf(x,y):
     maxx = x[y.argmax()]  # Find the x value corresponding to the maximum y value
     return 300*maxx, maxy, y.argmax()
 
-'''This is the function that runs the simulation with n rays, of wavelength lamd, with Nsize sample points (mirror positions from -18 to 18) a sourcepointorigin at spo. Returns a single array of all of the rays generated at every instance '''
-def RunRays_TESTPICKLE(Lamd,Nsize,spo,n): #no pixels
-    #n = 1
-    r = 0
-    Rays = makerays_Zero(spo,thetG,r,n) 
-    Ij = []
-    Delay = []
-    Rayf = [[[]for j in range(Nsize+1)] for i in range(n)]
-    for k in range(n):
-        Rayf[k][0].append('Ray: '+str(k))
-    yn=1
-    for y in np.linspace(-18,18,int(Nsize)): #nsize being number of positions of mirror
-        for i in range(len(Rays)):
-            Paths = [TTTTioMPickle,RRRRioMPickle,TTRRioMPickle,RTTRioMPickle,RTRTioMPickle,TRRTioMPickle,RRTTioMPickle,TRTRioMPickle]
-            Ri = Rays[i]
-            for j in range(8):
-                origin = (0,y,0)
-                if j ==0:
-                    Rayf[i][yn].append('Mirror position: '+str(origin))
-                out = Paths[j](Ri,p1,p2,p3,p4,origin)
-                out = ((Paths[j].__name__)[:-3],)+out
-                Rayf[i][yn].append(out)
-        yn=yn+1
-    return Rayf
+
 
 '''Runs the simulation with 1 ray down the center axis. power is simulated without pixels or airy pattern.'''
 def RunOneRay_nopix(Lamd,Nsize,spo): #no pixels
@@ -1848,8 +1825,8 @@ def Part2(Lamd,Nsize,spo):
         N.append(len(OutRays))
     return N
 
-'''This returns all of the information of a simulation of n rays. The format it is saved in is described in ToPickle.txt '''
-def RunOneRay_ToPickle(Lamd,Nsize,spo,n): #no pixels
+'''This is the function that runs the simulation with n rays, of wavelength lamd, with Nsize sample points (mirror positions from -18 to 18) a sourcepointorigin at spo. Returns a single array of all of the rays generated at every instance  '''
+def RunRays_ToPickle(Lamd,Nsize,spo,n): #no pixels
     #n = 1
     r = 0
     Rays = makerays_Zero(spo,thetG,r,n) 
