@@ -1,0 +1,4 @@
+These are saved pickle files of previous simulations run. 
+They are saved as Ij (which is the "power") and Delay (which is the mirror position). 
+
+The simulation is saved in the name: Chamb means power was calculated as equation 8, Narrow means there is a solid angle given by the following number in degrees (10,20,30), 2.07mm is the frequency of the source, and -161.375 is the x location of the source launch point (all others are assumed to be launched from the focus). Vert means it was vertically launched. NOLIM means rays were chosen from a hemisphere and used if they reached the first ellipse. 
