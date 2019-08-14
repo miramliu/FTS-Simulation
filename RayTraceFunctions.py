@@ -1,4 +1,4 @@
-'''This includes the functions of several different simulations of the Meyer Lab's Compact Fourier Transform Spectrometer. It ONLY includes the functions that are necessary FOR THE FINAL SIMULATIONS, rather than ones that were used when building this. It also includes different version of functions regarding input rays (random initial phase or all zero) and pickling (the ability to return every single ray generated in the simulation). If more functions showing the build up of this simulation, contact me at liusarkarm@uchicago.edu Mira Liu'''
+'''This includes the functions of several different simulations of the Meyer Lab's Compact Fourier Transform Spectrometer. It ONLY includes the functions that are necessary FOR THE FINAL SIMULATIONS, rather than ones that were used when building this. It also includes different version of functions regarding input rays (random initial phase or all zero) and pickling (the ability to return every single ray generated in the simulation). If you are interested in more functions showing the build up of this simulation, contact me at liusarkarm@uchicago.edu Mira Liu'''
 import numpy as np
 import numpy
 from random import uniform
@@ -61,7 +61,6 @@ center10,range10= [-96.458686868686868, 3.279771448324329, 73.24759051407338], [
 center7,range7= [96.45868686868684, 3.1907688264097978, -73.870253223692842], [41.577020202020208, 200, 19.642335814884394]
 Ecenter7 = [192.45-32.075,0,0]
 Ecenter10 = [-128.3-32.075,0,0]
-
 
 ''' Below are functions used in the simulation'''
 
@@ -710,6 +709,12 @@ def PLINTyS(y,p,v):
     xi = p[0] + t*v[0]
     zi = p[2] + t*v[2]
     return(xi,y,zi)
+''' for ONE ray'''
+def PLINTzS(z,p,v):
+    t = (z - p[i][2])/v[i][2]
+    xi = p[i][0] + t*v[i][0]
+    yi = p[i][1] + t*v[i][1]
+    return [xi,yi,z]
 
 '''find intersection points of one ray and the mirror.'''         
 def IntMS(p,v,coeffmirr,originmirr):
@@ -891,7 +896,7 @@ def IntM2(Ray,coeffmirr,originmirr):
     p = Ray[2]
     v = Ray[3]
     Ray_M = []
-    Ray_M.append(Ray[0])
+    Ray_M.append(Ray[0] + np.pi) # flips TO BE CONSISTENT
     Ray_M.append(Ray[1])
     intpoint = PLINTyS(originmirr[1],p,v)
     if SRM(intpoint,coeffmirr,originmirr) == True:
@@ -1007,11 +1012,58 @@ def ORS(): #one restricted spec
     if checkangle(v)== False:
         return ORS()
     
+    
+'''given a vector, checks the angle to make < lim degrees'''
+def checkangle_narrow(v,lim):
+    #lim = np.pi/6 #30 degrees
+    #lim= np.pi/9 #20 degrees
+    #lim = np.pi/18 #10 degrees
+    x,y,z = v[0],v[1],v[2]
+    theta = np.pi/2 -np.arctan(z/np.sqrt((x**2)+(y**2)))
+    if np.abs(theta) <= lim:
+        return True
+    else:
+        return False
+    
+'''Gives one restricted specular angle (restricted in that it will hit AND is within 30 degrees of the z axis) '''
+def ORS_narrow(lim): #one restricted spec
+    x,y,z = [],[],[]
+    theta=np.arccos(uniform(-1,1))
+    phi=np.random.uniform(0,2*np.pi)
+    xt=np.sin(theta)*np.cos(phi)
+    yt=np.sin(theta)*np.sin(phi)
+    zt=np.cos(theta)
+    if zt<0.:
+        zt=-zt
+    a=uniform(0,1)
+    while a>zt:
+        theta=np.arccos(uniform(-1,1))
+        phi=np.random.uniform(0,2*np.pi)
+        xt=np.sin(theta)*np.cos(phi)
+        yt=np.sin(theta)*np.sin(phi)
+        zt=np.cos(theta)
+        if zt<0.:
+            zt=-zt
+        a=uniform(0,1)
+    v = [xt, yt, zt]
+    while checkangle_narrow(v,lim) == True:
+        return v
+    if checkangle_narrow(v,lim)== False:
+        return ORS_narrow(lim)
+    
 '''returns a certain number (n) of random distribution of restricted specular rays '''    
 def specRestricted(n):
     V = []
     for i in np.arange(n):
         v = ORS()
+        V.append(v)  
+    return V
+
+'''returns a certain number (n) of random distribution of restricted specular rays < 30 degrees'''    
+def specRestricted_narrow(n,lim):
+    V = []
+    for i in np.arange(n):
+        v = ORS_narrow(lim)
         V.append(v)  
     return V
 
@@ -1076,6 +1128,34 @@ def FSRay(specnum,sourcepoint,sourcethet,origin):
             Rays.append(Ray)
     return Rays
 
+'''creates a SOURCE OF INITIAL RAYS, with rays defined by point and vector, arbitrary polarization, and distance travelled 0, < 30 degree launch angle''' 
+def FSRay_narrow(specnum,sourcepoint,sourcethet,origin,lim):
+    originG = [0,0,0]
+    Rays = []
+    if type(sourcepoint[0]) is int or type(sourcepoint[0]) is float or type(sourcepoint[0]) is numpy.float64:
+        for i in range(0,specnum):
+            v1 = specRestricted_narrow(1,lim)
+            vx,vy,vz = sep(v1)
+            v1x,v1y,v1z = transformLG(vx,vy,vz,originG,sourcethet)
+            v2 = sepop(v1x,v1y,v1z)
+            Ex,Ey,thet1 = InitialPolarization()
+            spT = [sourcepoint[0],sourcepoint[1],sourcepoint[2]]
+            Ray = [thet1,1.0,spT,v2[0],0]
+            Rays.append(Ray)
+        return Rays
+    else:
+        for i in range (0,specnum):
+            v1 = specRestricted_narrow(1,lim)
+            vx,vy,vz = sep(v1)
+            v1x,v1y,v1z = transformLG(vx,vy,vz,originG,sourcethet)
+            v2 = sepop(v1x,v1y,v1z)
+            j = random.randint(0,len(sourcepoint[0])-1)
+            spT = [sourcepoint[0][j],sourcepoint[1][j],sourcepoint[2][j]]
+            Ex,Ey,thet1 = InitialPolarization()
+            Ray = [thet1,1.0,spT,v2[0],0]
+            Rays.append(Ray)
+    return Rays
+
 '''SAME AS ABOVE BUT INITIAL INITIAL POLARIZATION VALUE ZERO'''
 def FSRay_Zero(specnum,sourcepoint,sourcethet,origin):
     originG = [0,0,0]
@@ -1095,6 +1175,36 @@ def FSRay_Zero(specnum,sourcepoint,sourcethet,origin):
     else:
         for i in range (0,specnum):
             v1 = specRestricted(1)
+            vx,vy,vz = sep(v1)
+            v1x,v1y,v1z = transformLG(vx,vy,vz,originG,sourcethet)
+            v2 = sepop(v1x,v1y,v1z)
+            j = random.randint(0,len(sourcepoint[0])-1)
+            spT = [sourcepoint[0][j],sourcepoint[1][j],sourcepoint[2][j]]
+            #Ex,Ey,thet1 = InitialPolarization()
+            thet1 = 0
+            Ray = [thet1,1.0,spT,v2[0],0]
+            Rays.append
+        return Rays
+    
+'''SAME AS ABOVE BUT INITIAL INITIAL POLARIZATION VALUE ZERO < 30 degree launch angle'''
+def FSRay_Zero_narrow(specnum,sourcepoint,sourcethet,origin,lim):
+    originG = [0,0,0]
+    Rays = []
+    if type(sourcepoint[0]) is int or type(sourcepoint[0]) is float or type(sourcepoint[0]) is numpy.float64:
+        for i in range(0,specnum):
+            v1 = specRestricted_narrow(1,lim)
+            vx,vy,vz = sep(v1)
+            v1x,v1y,v1z = transformLG(vx,vy,vz,originG,sourcethet)
+            v2 = sepop(v1x,v1y,v1z)
+            #Ex,Ey,thet1 = InitialPolarization()
+            thet1 = 0
+            spT = [sourcepoint[0],sourcepoint[1],sourcepoint[2]]
+            Ray = [thet1,1.0,spT,v2[0],0]
+            Rays.append(Ray)
+        return Rays
+    else:
+        for i in range (0,specnum):
+            v1 = specRestricted_narrow(1,lim)
             vx,vy,vz = sep(v1)
             v1x,v1y,v1z = transformLG(vx,vy,vz,originG,sourcethet)
             v2 = sepop(v1x,v1y,v1z)
@@ -1278,8 +1388,8 @@ def jRegions(n):
     return DetTot
 
 #these are the functions above but editted to include position of mirror
-from BackgroundValues import *
-from PossiblePaths import *
+#from BackgroundValues import *
+#from PossiblePaths import *
 
 '''Output From Detector w/ Mirror. GIVE initial RAYS AND Y position, returns output rays from detector if mirror at Y'''
 def OFDM(Rays,y): 
@@ -1295,14 +1405,14 @@ def OFDM(Rays,y):
     return Rayf
 
 
-'''checks if rays hit the detector or not (discards those that dont'''
+'''checks if rays hit the detector or not (discards those that dont). INCLUDES TRAVEL TO DETECTOR, returns new distance travelled, new "launch point" which is final point on detector'''
 def checkoutraysM(Rays,center,r): #RAYS THAT HIT DETECTOR
     GRays = []
     for i in range(len(Rays)):
         det = PLINTzS(80.,Rays[i][2],Rays[i][3])
         Rays[i][4] = Rays[i][4]+ dist(Rays[i][2],det)
         Rays[i][2] = det
-        Rays[i][0] = Rays[i][0] + np.pi #reflection changes polarization
+        Rays[i][0] = Rays[i][0] #REACHING DETECTOR DOES NOT CHANGE POLARIZATION.
         d = ((det[0]-center[0])**2) + ((det[1]-center[1])**2) #if it is within detector
         if d <= r**2: 
             GRays.append(Rays[i])
@@ -1316,12 +1426,12 @@ def RunRaysMi(Rays,y): #just give number of rays to be run through this FTS at a
     Regions = regionalize(Gtestsorted)
     return Gtestsorted,Regions'''
 
-''' give rays to be run through this FTS at a specific y, returns the good rays and the region. not used anymore'''
-def RunRaysM(Rays,y): #just give number of rays to be run through this FTS at a specific y!
+''' give rays to be run through this FTS at a specific y, returns the good rays and the region. Ends with reflecting of foutput elipsoid. DOES NOT INCLUDE TRAVEL TO DETECTOR.'''
+def RunRaysM(Rays,y): #just give rays to be run through this FTS at a specific y!
     Rayf = OFDM(Rays,y)
     G= checkoutraysM(Rayf,[160.375,-113],7.9375) # GOOD RAYS ONLY 
-    Gtestsorted = sortgrid(G)
-    return Gtestsorted
+    #Gtestsorted = sortgrid(G)
+    return G
 
 '''makes n rays with radius r around the fixed source point origin that is the focus of the first ellipsoid. '''
 def makeraysiFIXED(n,r):
@@ -1439,6 +1549,7 @@ def makeraysVERTICAL(sourcepointorigin,r,n):
         Rays[i][3]=v2
     return Rays
 
+
 '''Same as above with initial phase all set to zero, rather than random phase. '''
 def makeraysVERTICAL_Zero(sourcepointorigin,r,n):
     sourcethet = [0.,0.,0.] #SHOT STRAIGHT UP
@@ -1521,10 +1632,22 @@ def makerays(sourcepointorigin,sourcethet,r,n):
     Rays = FSRay(n,sourcepoints, sourcethet,origin10)
     return Rays
 
+'''Makes n rays. sourcepoints random in radius r around sourcepointorigin. random launch angles in hemisphere centered around sourcethet and < lim (solid angle in radians) launch angle. '''
+def makerays_narrow(sourcepointorigin,sourcethet,r,n,lim):
+    sourcepoints = specsource(r,sourcepointorigin,sourcethet,n) # SOURCE
+    Rays = FSRay_narrow(n,sourcepoints, sourcethet,origin10,lim)
+    return Rays
+
 '''Same as above but with initial phase of zero instead of random. '''
 def makerays_Zero(sourcepointorigin,sourcethet,r,n):
     sourcepoints = specsource(r,sourcepointorigin,sourcethet,n) # SOURCE
     Rays = FSRay_Zero(n,sourcepoints, sourcethet,origin10)
+    return Rays
+
+'''Same as above but with initial phase of zero instead of random and < lim (solid angle in radians) launch angle. '''
+def makerays_Zero_narrow(sourcepointorigin,sourcethet,r,n,lim):
+    sourcepoints = specsource(r,sourcepointorigin,sourcethet,n) # SOURCE
+    Rays = FSRay_Zero_narrow(n,sourcepoints, sourcethet,origin10,lim)
     return Rays
 
 '''Calculates number of samples needed for a given wavelength (in mm) '''
@@ -1541,30 +1664,7 @@ def Maxf(x,y):
     maxx = x[y.argmax()]  # Find the x value corresponding to the maximum y value
     return 300*maxx, maxy, y.argmax()
 
-'''This is the function that runs the simulation with n rays, of wavelength lamd, with Nsize sample points (mirror positions from -18 to 18) a sourcepointorigin at spo. Returns a single array of all of the rays generated at every instance '''
-def RunRays_TESTPICKLE(Lamd,Nsize,spo,n): #no pixels
-    #n = 1
-    r = 0
-    Rays = makerays_Zero(spo,thetG,r,n) 
-    Ij = []
-    Delay = []
-    Rayf = [[[]for j in range(Nsize+1)] for i in range(n)]
-    for k in range(n):
-        Rayf[k][0].append('Ray: '+str(k))
-    yn=1
-    for y in np.linspace(-18,18,int(Nsize)): #nsize being number of positions of mirror
-        for i in range(len(Rays)):
-            Paths = [TTTTioMPickle,RRRRioMPickle,TTRRioMPickle,RTTRioMPickle,RTRTioMPickle,TRRTioMPickle,RRTTioMPickle,TRTRioMPickle]
-            Ri = Rays[i]
-            for j in range(8):
-                origin = (0,y,0)
-                if j ==0:
-                    Rayf[i][yn].append('Mirror position: '+str(origin))
-                out = Paths[j](Ri,p1,p2,p3,p4,origin)
-                out = ((Paths[j].__name__)[:-3],)+out
-                Rayf[i][yn].append(out)
-        yn=yn+1
-    return Rayf
+
 
 '''Runs the simulation with 1 ray down the center axis. power is simulated without pixels or airy pattern.'''
 def RunOneRay_nopix(Lamd,Nsize,spo): #no pixels
@@ -1593,7 +1693,7 @@ def RunOneRay_nopix(Lamd,Nsize,spo): #no pixels
         PTot = PTot + (Ext*Ext.conjugate()).real + (Eyt*Eyt.conjugate()).real
         Delay.append(y*0.95630475596*4)
         Ij.append(PTot)
-    return Delay,Ij
+    return Delay,Ij   
 
 '''Simulation of interference of probability function of a single photon. 500 rays with initial phase of zero from a single source point, random launch points, and power is summed before squared. To show Chamberlain loss (large etendue) '''
 def RunRays_Prob(Lamd,Nsize,spo):
@@ -1632,6 +1732,104 @@ def RunRays_Prob(Lamd,Nsize,spo):
         Delay.append(y*0.95630475596*4)
         Ij.append(PTot)
     return Delay,Ij
+
+'''Simulation of interference of probability function of a single photon. 500 rays with initial phase of zero from a single source point, random launch points, and power is summed before squared. To show Chamberlain loss (large etendue) '''
+def RunRays_Prob_narrow(Lamd,Nsize,spo,lim):
+    n = 500
+    r = 0
+    thetG = [0,0,0]
+    #Rays = makeraysVERTICAL(spo,r,n) 
+    Rays = makerays_Zero_narrow(spo,thetG,r,n,lim) #lim is solid angle wanted in radians
+    #jx,jy = gridlines(7.9375,[160.375,-113],200) #these are now the PIXELS
+    #Pix = MakePixels(jx,jy) #center of each pixel
+    Ij = []
+    Delay = []
+    for y in np.linspace(-18,18,int(Nsize)):
+        PTot=0
+        OutRays=RunRaysM(Rays,y) #all rays that made it through the detector
+        #Overlap = gaussoverlap(OutRays[0],OutRays[5],3.3) #two paths that hit two different spots 
+        #for j in range(len(Pix)): #per PIXEL
+        for j in range(1): #no pixels
+            Ex4i = 0 #adding PER PIXEL from parts of RAYS in this PIXEL
+            Ey4i = 0 #THIS IS WHERE THEY WILL INTERFERE
+            for i in range(len(OutRays)): #per ray IN THIS PIXEL
+                I = OutRays[i][1] #amplitude
+                thet = OutRays[i][0] #polarization
+                phase = np.exp(1j*(OutRays[i][4]*2*np.pi/Lamd)) #e^ix2pi/lambda, x = distance traveleld
+                Ex1 = np.sqrt(I)*np.cos(thet) #polarization
+                Ey1 = np.sqrt(I)*np.sin(thet)
+                Ex = Ex1*phase #phase
+                Ey = Ey1*phase
+                #doing summation over entire detector
+                #sig,mux,muy = MakeGaussian(OutRays[i],Lamd)
+                #Gr = Airygaussian3dNORM(Pix[j][0],Pix[j][1],sig,mux,muy)
+                Gr = 1
+                Ex4i = Ex4i + Gr*Ex #add electric fields of all rays
+                Ey4i = Ey4i + Gr*Ey
+            PTot = PTot + (Ex4i*Ex4i.conjugate()).real + (Ey4i*Ey4i.conjugate()).real
+        Delay.append(y*0.95630475596*4)
+        Ij.append(PTot)
+    return Delay,Ij
+
+
+'''Givin initial rays, just change source (set shift of source point) keeping everything else identical '''
+def makerays_Zero_narrow_SetShift(sourcepoint,Rays): 
+    spT = [sourcepoint[0],sourcepoint[1],sourcepoint[2]]
+    for i in range(len(Rays)): 
+        Rays[i][2] = spT
+    return Rays
+
+'''Simulation of interference of probability function of a single photon. 500 rays with initial phase of zero from a single source point, random launch points, and power is summed before squared. To show Chamberlain loss (large etendue) while moving source and giving initial set of rays'''
+def RunRays_Prob_narrow_SetRays(Lamd,Nsize,spo,lim,Rays):
+    #n = 500
+    #r = 0
+    thetG = [0,0,0]
+    #Rays = makeraysVERTICAL(spo,r,n) 
+    #Rays = makerays_Zero_narrow(spo,thetG,r,n,lim) #lim is solid angle wanted in radians
+    #jx,jy = gridlines(7.9375,[160.375,-113],200) #these are now the PIXELS
+    #Pix = MakePixels(jx,jy) #center of each pixel
+    Ij = []
+    Delay = []
+    DETECTOR = [] #added to capture final points on detector
+    for y in np.linspace(-18,18,int(Nsize)):
+        PTot=0
+        OutRays=RunRaysM(Rays,y) #all rays that made it to the detector
+        #Overlap = gaussoverlap(OutRays[0],OutRays[5],3.3) #two paths that hit two different spots 
+        #for j in range(len(Pix)): #per PIXEL
+        P = [] #final points on detector.
+        for j in range(1): #no pixels
+            Ex4i = 0 #adding PER PIXEL from parts of RAYS in this PIXEL
+            Ey4i = 0 #THIS IS WHERE THEY WILL INTERFERE
+            for i in range(len(OutRays)): #per ray IN THIS PIXEL
+                I = OutRays[i][1] #amplitude
+                thet = OutRays[i][0] #polarization
+                phase = np.exp(1j*(OutRays[i][4]*2*np.pi/Lamd)) #e^ix2pi/lambda, x = distance traveleld
+                Ex1 = np.sqrt(I)*np.cos(thet) #polarization
+                Ey1 = np.sqrt(I)*np.sin(thet)
+                Ex = Ex1*phase #phase
+                Ey = Ey1*phase
+                #doing summation over entire detector
+                #sig,mux,muy = MakeGaussian(OutRays[i],Lamd)
+                #Gr = Airygaussian3dNORM(Pix[j][0],Pix[j][1],sig,mux,muy)
+                Gr = 1
+                Ex4i = Ex4i + Gr*Ex #add electric fields of all rays
+                Ey4i = Ey4i + Gr*Ey
+                P.append(OutRays[i][2]) #spot on detector.
+            PTot = PTot + (Ex4i*Ex4i.conjugate()).real + (Ey4i*Ey4i.conjugate()).real
+        Delay.append(y*0.95630475596*4)
+        Ij.append(PTot)
+        DETECTOR.append(P)
+    return Delay,Ij,DETECTOR
+
+def drawcircle(h,k,r):
+    x = np.linspace(h-r, h+r, 100)
+    ypos = []
+    yneg = []
+    for i in range(100):
+        ypos.append(k + np.sqrt(r**2 - (x[i]-h)**2))
+        yneg.append(k - np.sqrt(r**2 - (x[i]-h)**2))
+    return x,ypos,yneg
+
 
 
 '''Runs one ray through the simulation, random phase, random launch angle. Also includes number of rays for geometric loss. to show geometric loss of power. '''
@@ -1693,12 +1891,37 @@ def Part2(Lamd,Nsize,spo):
         N.append(len(OutRays))
     return N
 
+'''This is the function that runs the simulation with n rays, of wavelength lamd, with Nsize sample points (mirror positions from -18 to 18) a sourcepointorigin at spo. Returns a single array of all of the rays generated at every instance  '''
+def RunRays_ToPickle(Lamd,Nsize,spo,n): #no pixels
+    #n = 1
+    r = 0
+    Rays = makerays_Zero(spo,thetG,r,n) 
+    Ij = []
+    Delay = []
+    Rayf = [[[]for j in range(Nsize+1)] for i in range(n)]
+    for k in range(n):
+        Rayf[k][0].append('Ray: '+str(k))
+    yn=1
+    for y in np.linspace(-18,18,int(Nsize)): #nsize being number of positions of mirror
+        for i in range(len(Rays)):
+            Paths = [TTTTioMPickle,RRRRioMPickle,TTRRioMPickle,RTTRioMPickle,RTRTioMPickle,TRRTioMPickle,RRTTioMPickle,TRTRioMPickle]
+            Ri = Rays[i]
+            for j in range(8):
+                origin = (0,y,0)
+                if j ==0:
+                    Rayf[i][yn].append('Mirror position: '+str(origin))
+                out = Paths[j](Ri,p1,p2,p3,p4,origin)
+                out = ((Paths[j].__name__)[:-3],)+out
+                Rayf[i][yn].append(out)
+        yn=yn+1
+    return Rayf
+
 
 ''' Below are functions included in PossiblePaths.py'''
 ''' Entire run of the simulation (from input ray to the output ellipsoid, and all those below require the position of the mirror (as an origin). Only the eight paths that reach the detector are included, with each function referring to fork in the path chosen. For example, TTTTioM is the path of the ray that was transmitted through all four polarizers with the mirror at the position 'originM', and RTTRioM is the path of the ray that was reflected from polarizer 1, transmitted through polarizer 2 and 3, and and reflected from polarizer 4 with the mirror at the position 'originM'.'''
 
 def TTTTioM(Ri,p1,p2,p3,p4,originM):
-    Ray1 = ReflEll(Ri,thet10,origin10,coeffellipse7,center10,range10)
+    Ray1 = ReflEll(Ri,thet10,origin10,coeffellipse7,center10,range10) #first ellipsoid
     Ray_TP1 = IntPolT2(Ray1,coeffpolar,originpolar1,p1) #P1
     Ray_E8 = ReflEll(Ray_TP1,thet6,origin8,coeffellipse56,center8,range8) #E8
     Ray_TP2 = IntPolT2(Ray_E8,coeffpolar,originpolar2,p2) #P2
@@ -1708,7 +1931,7 @@ def TTTTioM(Ri,p1,p2,p3,p4,originM):
     Ray_TP3 = IntPolT2(Ray_E4,coeffpolar,originpolar3,p3) #P3
     Ray_E5 = ReflEll(Ray_TP3, thet5,origin5,coeffellipse56,center5,range5)#OFF E5
     Ray_TP4 = IntPolT2(Ray_E5,coeffpolar,originpolar4,p4)
-    Ray_E72 = ReflEll(Ray_TP4,thet7,origin7,coeffellipse7,center7,range7)
+    Ray_E72 = ReflEll(Ray_TP4,thet7,origin7,coeffellipse7,center7,range7) #OFF E7
     return Ray_E72
 
 def RRRRioM(Ri,p1,p2,p3,p4,originM):
@@ -1924,7 +2147,7 @@ def TRTRioMPickle(Ri,p1,p2,p3,p4,originM):
     return Ri, Ray1, Ray_TP1,Ray_E8,Ray_RP2,Ray_E1,Ray_M0,Ray_E2,Ray_TP3,Ray_E6,Ray_RP4,Ray_E72
 
 
-
+# Ignore Below
 '''Tilting: (includes ability to tilt mirror and polarizers)
 GIVE initial RAYS AND Y position, returns output rays from detector if mirror at Y. Includes tilt of polarizers and tilt of mirror.
 Not completed.
