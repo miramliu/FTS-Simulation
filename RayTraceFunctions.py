@@ -709,6 +709,12 @@ def PLINTyS(y,p,v):
     xi = p[0] + t*v[0]
     zi = p[2] + t*v[2]
     return(xi,y,zi)
+''' for ONE ray'''
+def PLINTzS(z,p,v):
+    t = (z - p[i][2])/v[i][2]
+    xi = p[i][0] + t*v[i][0]
+    yi = p[i][1] + t*v[i][1]
+    return [xi,yi,z]
 
 '''find intersection points of one ray and the mirror.'''         
 def IntMS(p,v,coeffmirr,originmirr):
@@ -890,7 +896,7 @@ def IntM2(Ray,coeffmirr,originmirr):
     p = Ray[2]
     v = Ray[3]
     Ray_M = []
-    Ray_M.append(Ray[0])
+    Ray_M.append(Ray[0] + np.pi) # flips TO BE CONSISTENT
     Ray_M.append(Ray[1])
     intpoint = PLINTyS(originmirr[1],p,v)
     if SRM(intpoint,coeffmirr,originmirr) == True:
@@ -1399,14 +1405,14 @@ def OFDM(Rays,y):
     return Rayf
 
 
-'''checks if rays hit the detector or not (discards those that dont'''
+'''checks if rays hit the detector or not (discards those that dont). INCLUDES TRAVEL TO DETECTOR, returns new distance travelled, new "launch point" which is final point on detector'''
 def checkoutraysM(Rays,center,r): #RAYS THAT HIT DETECTOR
     GRays = []
     for i in range(len(Rays)):
         det = PLINTzS(80.,Rays[i][2],Rays[i][3])
         Rays[i][4] = Rays[i][4]+ dist(Rays[i][2],det)
         Rays[i][2] = det
-        Rays[i][0] = Rays[i][0] + np.pi #reflection changes polarization
+        Rays[i][0] = Rays[i][0] #REACHING DETECTOR DOES NOT CHANGE POLARIZATION.
         d = ((det[0]-center[0])**2) + ((det[1]-center[1])**2) #if it is within detector
         if d <= r**2: 
             GRays.append(Rays[i])
@@ -1420,7 +1426,7 @@ def RunRaysMi(Rays,y): #just give number of rays to be run through this FTS at a
     Regions = regionalize(Gtestsorted)
     return Gtestsorted,Regions'''
 
-''' give rays to be run through this FTS at a specific y, returns the good rays and the region. not used anymore'''
+''' give rays to be run through this FTS at a specific y, returns the good rays and the region. Ends with reflecting of foutput elipsoid. DOES NOT INCLUDE TRAVEL TO DETECTOR.'''
 def RunRaysM(Rays,y): #just give rays to be run through this FTS at a specific y!
     Rayf = OFDM(Rays,y)
     G= checkoutraysM(Rayf,[160.375,-113],7.9375) # GOOD RAYS ONLY 
@@ -1855,7 +1861,7 @@ def RunRays_ToPickle(Lamd,Nsize,spo,n): #no pixels
 ''' Entire run of the simulation (from input ray to the output ellipsoid, and all those below require the position of the mirror (as an origin). Only the eight paths that reach the detector are included, with each function referring to fork in the path chosen. For example, TTTTioM is the path of the ray that was transmitted through all four polarizers with the mirror at the position 'originM', and RTTRioM is the path of the ray that was reflected from polarizer 1, transmitted through polarizer 2 and 3, and and reflected from polarizer 4 with the mirror at the position 'originM'.'''
 
 def TTTTioM(Ri,p1,p2,p3,p4,originM):
-    Ray1 = ReflEll(Ri,thet10,origin10,coeffellipse7,center10,range10)
+    Ray1 = ReflEll(Ri,thet10,origin10,coeffellipse7,center10,range10) #first ellipsoid
     Ray_TP1 = IntPolT2(Ray1,coeffpolar,originpolar1,p1) #P1
     Ray_E8 = ReflEll(Ray_TP1,thet6,origin8,coeffellipse56,center8,range8) #E8
     Ray_TP2 = IntPolT2(Ray_E8,coeffpolar,originpolar2,p2) #P2
