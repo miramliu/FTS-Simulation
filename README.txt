@@ -6,6 +6,10 @@ Included in this repository are three base .py files necessary to run the simula
 2. PlotSimulation.ipynb is a jupyter notebook that plots the paths of rays (n=50) through simulation (specified by a function that sets which of the 8 paths the rays will be taking). 
 3. RunSimulation.ipynb is a jupyter notebook that calls functions and gives appropriate input to launch rays through the simulation and can implement different methods of power summation at the detector.
 More notes are included in the notebooks.
+3. TimeConstantFit is a jupyter notebook that explicitly goes through the analysis of the time constant (excluding the MCMC that was run that takes a very long time). The parameters returned by the MCMC are plugged into the mathematical model of a convolved interferogram, which is compared to a 30mm/s experimental interferogram. Those parameters are then used to deconvolve the 30mm/s interferogram, which is then compared to a 10mm/s experimental interferogram. 
+
+Previous Runs contains the pickle files of both experimental data and simulated data.
+20160921_1724_20160921_10mms_new_fts_all_band.pkl and 20170615_1729_30mms_reference.pkl were used in TimeConstantFit.
 
 20180318_2211_150GHz_new_polarizer_35.pkl is the reference experimental data set run with the 144GHz source. It can be ploted to compare with the results of the simulation with Power1 = (d['sig0F']), Power = [x/Power1.max() for x in Power1], Delay = (d['delay0F']). 
 
