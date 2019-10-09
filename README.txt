@@ -7,6 +7,7 @@ Included in this repository are three base .py files necessary to run the simula
 3. RunSimulation.ipynb is a jupyter notebook that calls functions and gives appropriate input to launch rays through the simulation and can implement different methods of power summation at the detector.
 More notes are included in the notebooks.
 3. TimeConstantFit is a jupyter notebook that explicitly goes through the analysis of the time constant (excluding the MCMC that was run that takes a very long time). The parameters returned by the MCMC are plugged into the mathematical model of a convolved interferogram, which is compared to a 30mm/s experimental interferogram. Those parameters are then used to deconvolve the 30mm/s interferogram, which is then compared to a 10mm/s experimental interferogram. 
+4. GitAnalysisOverview is a jupyter notebook that is simply markdown copy of an old analysis explanation. 
 
 Previous Runs contains the pickle files of both experimental data and simulated data.
 20160921_1724_20160921_10mms_new_fts_all_band.pkl and 20170615_1729_30mms_reference.pkl were used in TimeConstantFit.
@@ -18,4 +19,4 @@ There are pickle files of recently run simulations saved in the folder 'Previous
 Lastly there is a .pkl file that contains every step of the simulations of a 90Ghz light source with 500 rays, located at this link https://uchicago.box.com/s/vhxjh8tygffc7ips137com2ajwc9lrfs. ToPickle.txt included in this repository describes the format of the pickle file. 
 
 All code is written by Mira Liu.
-- 08/14/2019
+- 10/08/2019
