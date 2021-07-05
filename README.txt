@@ -18,5 +18,5 @@ There are pickle files of recently run simulations saved in the folder 'Previous
 
 Lastly there is a .pkl file that contains every step of the simulations of a 90Ghz light source with 500 rays, located at this link https://uchicago.box.com/s/vhxjh8tygffc7ips137com2ajwc9lrfs. ToPickle.txt included in this repository describes the format of the pickle file. 
 
-All code is written by Mira Liu.
+All code is written by Mira Liu who can be reached at liusarkarm@uchicago.edu
 - 10/08/2019
